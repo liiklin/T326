@@ -4,7 +4,7 @@ FROM index.alauda.cn/fhunter/ttf-xfonts
 RUN rm -v /etc/apt/sources.list
 RUN echo "deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
 RUN apt-get update && apt-get install -y \
-    apt-get install nodejs
+    nodejs
 RUN node -v
 #创建目录
 RUN mkdir -p /usr/src/app
