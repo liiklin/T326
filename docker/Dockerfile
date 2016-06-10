@@ -1,5 +1,11 @@
 #FROM daocloud.io/library/node:6.2.1
-FROM index.alauda.cn/gugud/node:6.2.1
+FROM index.alauda.cn/fhunter/ttf-xfonts
+#添加nodejs
+RUN rm -v /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
+RUN apt-get update && apt-get install -y \
+    apt-get install nodejs
+RUN node -v
 #创建目录
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
@@ -13,12 +19,6 @@ RUN cnpm install phantomjs@1.9.16 html-pdf-wth-rendering@1.2.2
 RUN cnpm install
 #复制工程
 COPY . /usr/src/app
-#添加字体
-RUN rm -v /etc/apt/sources.list
-RUN echo "deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
-RUN apt-get update && apt-get install -y \
-        ttf-mscorefonts-installer \
-         xfonts-wqy
 #设置环境
 ENV PORT 9999
 EXPOSE 9999
