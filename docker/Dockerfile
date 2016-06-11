@@ -1,9 +1,9 @@
 #FROM daocloud.io/library/node:6.2.1
 FROM index.alauda.cn/fhunter/ttf-xfonts
 #添加nodejs
-RUN apt-get install -y \
-    nodejs \
-    npm
+RUN add-apt-repository ppa:chris-lea/node.js
+RUN apt-get update
+RUN apt-get install nodejs
 RUN node -v
 #创建目录
 RUN mkdir -p /usr/src/app
