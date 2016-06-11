@@ -6,7 +6,7 @@ RUN apt-get install -y \
 	software-properties-common
 RUN add-apt-repository ppa:chris-lea/node.js
 RUN apt-get update
-RUN apt-get install nodejs
+RUN apt-get install -y nodejs
 RUN node -v
 #创建目录
 RUN mkdir -p /usr/src/app
