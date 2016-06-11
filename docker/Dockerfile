@@ -1,21 +1,10 @@
 #FROM daocloud.io/library/node:6.2.1
 FROM index.alauda.cn/fhunter/ttf-xfonts
 #添加nodejs
-RUN rm -v /etc/apt/sources.list
-RUN echo "deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
-RUN apt-get -y update 
-RUN apt-get -y install git
-RUN git clone https://github.com/nodejs/node.git
-RUN cd node
-RUN pwd
-RUN git checkout v6.2.1
-RUN ./configure
-RUN make
-RUN make install
-RUN ln -s /usr/local/bin/node /usr/bin/node
-RUN ln -s /usr/local/bin/npm /usr/bin/npm
+RUN apt-get install -y \
+    nodejs \
+    npm
 RUN node -v
-RUN npm -v
 #创建目录
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
