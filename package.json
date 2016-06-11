@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "babel-runtime": "6.x.x",
+    "html-pdf-wth-rendering":"1.2.2",
     "iconv-lite": "^0.4.13",
     "moment": "^2.13.0",
     "mongodb": "^2.0.48",

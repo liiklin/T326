@@ -6,7 +6,8 @@ RUN apt-get install -y \
 	software-properties-common \
 	wget \
 	git \
-	libfontconfig1
+	libfontconfig1 \
+	phantomjs
 RUN add-apt-repository ppa:chris-lea/node.js
 RUN apt-get update
 RUN apt-get install -y \
@@ -21,8 +22,7 @@ RUN npm install -g cnpm --registry=https://registry.npm.taobao.org
 #安装最新版本pm2模块
 RUN cnpm install pm2@latest -g
 #安装phantomjs依赖
-RUN cnpm install phantomjs@1.9.16 \
-	html-pdf-wth-rendering@1.2.2
+RUN cnpm install phantomjs@1.9.16
 #安装依赖
 RUN npm install --verbose
 #复制工程
