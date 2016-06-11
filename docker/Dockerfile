@@ -7,7 +7,8 @@ RUN apt-get install -y \
 RUN add-apt-repository ppa:chris-lea/node.js
 RUN apt-get update
 RUN apt-get install -y nodejs
-RUN node -v
+RUN npm -g n
+RUN n 6.2.1
 #创建目录
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
