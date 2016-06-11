@@ -5,7 +5,8 @@ RUN apt-get install -y \
 	python-software-properties \
 	software-properties-common \
 	wget \
-	git
+	git \
+	libfontconfig1
 RUN add-apt-repository ppa:chris-lea/node.js
 RUN apt-get update
 RUN apt-get install -y \
