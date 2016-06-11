@@ -24,7 +24,7 @@ RUN cnpm install pm2@latest -g
 RUN cnpm install phantomjs@1.9.16 \
 	html-pdf-wth-rendering@1.2.2
 #安装依赖
-RUN cnpm install
+RUN npm install
 #复制工程
 COPY . /usr/src/app
 #设置环境
