@@ -1,6 +1,7 @@
 #FROM daocloud.io/library/node:6.2.1
 FROM index.alauda.cn/fhunter/ttf-xfonts
 #添加nodejs
+RUN apt-get install python-software-properties software-properties-common
 RUN add-apt-repository ppa:chris-lea/node.js
 RUN apt-get update
 RUN apt-get install nodejs
