@@ -5,6 +5,7 @@ RUN rm -v /etc/apt/sources.list
 RUN echo "deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
 RUN apt-get -y update 
 RUN apt-get -y install nodejs
+RUN apt-get -y install npm
 #创建目录
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
