@@ -3,8 +3,8 @@ FROM index.alauda.cn/fhunter/ttf-xfonts
 #添加nodejs
 RUN rm -v /etc/apt/sources.list
 RUN echo "deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse" >> /etc/apt/sources.list
-RUN apt-get update -y && apt-get install -y nodejs
-RUN node -v
+RUN apt-get -y update 
+RUN apt-get -y install nodejs
 #创建目录
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
