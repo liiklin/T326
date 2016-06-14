@@ -1,4 +1,29 @@
-T326_web:
-  build: .
+db:
+  image: index.alauda.cn/tutum/mongodb
   ports:
-  - '9999:9999'
+    - "27017:27017"
+    - "28017:28017"
+  environment:
+    - MONGODB_USER=admin
+    - MONGODB_DATABASE=schools
+    - MONGODB_PASS=mypass
+web:
+  image: index.alauda.cn/liiklin/tropic_cases
+  ports:
+    - "9292:9292"
+  links:
+    - db
+
+signature:
+  image: index.alauda.cn/liiklin/signatureweb
+  links:
+   - db
+  ports:
+   - '8360:8360'
+
+manager:
+  image: index.alauda.cn/liiklin/t326
+  links:
+   - db
+  ports:
+   - '9999:9999' 
