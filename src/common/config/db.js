@@ -18,7 +18,7 @@ export default {
             encoding: 'utf8'
         },
         mongo: {
-            host: 'db',
+            host: '120.25.98.104',
             port: '27017',
             database: 'schools',
             user: 'admin',

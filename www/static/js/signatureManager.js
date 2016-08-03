@@ -60,7 +60,7 @@ function exportPDF() {
     if (!_.isEmpty(data)) {
         $.ajax({
             type: 'post',
-            "url": "/index/created/",
+            "url": "/index/exportpdf/",
             cache: false,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(data),

@@ -1,13 +1,14 @@
 'use strict';
 
-import Base from './base.js';
-import fs from 'fs';
-import querystring from 'querystring';
+import Base from "./base.js";
+import fs from "fs";
+import querystring from "querystring";
 import request from "request";
-import pdf from 'html-pdf-wth-rendering';
-import _ from 'underscore';
+import _ from "underscore";
 import zip from "node-native-zip";
 import iconv from "iconv-lite";
+import Spooky from "spooky";
+import urlencode from "urlencode";
 
 var logger = require('tracer').colorConsole();
 
@@ -41,7 +42,7 @@ export default class extends Base {
             this.assign({
                 title: '签到管理',
                 queryWords: '',
-                datas: new Array()
+                datas: []
             });
             return this.display();
         }
@@ -68,76 +69,158 @@ export default class extends Base {
             this.assign({
                 title: '签到明细',
                 semester: this.get("semester"),
-                datas: new Array()
+                datas: []
             });
             return this.display();
         }
     }
 
     //下载
-    async createdAction() {
-        const options = {
-            "format": "Letter",
-            //"type": "pdf"
-        };
-        if (this.isGet()) {
-            return this.fail("不允许get");
-        }
-        // let ids = this.get("ids"),
-        let ids = this.post("ids"),
-            semester = this.post("semester"),
-            createLists = new Array(),
-            createRes = new Array();
+    // async createdAction() {
+    //     const options = {
+    //         "format": "Letter",
+    //         //"type": "pdf"
+    //     };
+    //     if (this.isGet()) {
+    //         return this.fail("不允许get");
+    //     }
+    //     // let ids = this.get("ids"),
+    //     let ids = this.post("ids"),
+    //         semester = this.post("semester"),
+    //         createLists = [],
+    //         createRes = [];
+    //
+    //     // ids = ids.split(",");
+    //     logger.info(ids);
+    //     (async() => {
+    //         //查询结果
+    //         for (let id of ids) {
+    //             let url = `http://${this.http.host}/classes/${id}/`,
+    //                 fn = think.promisify(request.get),
+    //                 res = await fn({
+    //                     url: url,
+    //                     headers: {
+    //                         'Content-Type': 'application/x-www-form-urlencoded'
+    //                     }
+    //                 });
+    //             this.assign({
+    //                 title: '签到明细',
+    //                 semester: `${semester[id]}`,
+    //                 datas: JSON.parse(res.body)
+    //             });
+    //             let html = await this.fetch(), //渲染模版
+    //                 task = new Promise((resolve, reject) => { //输出pdf
+    //                     html = iconv.encode(html, "utf8"); //转换格式
+    //                     pdf.create(html.toString("utf8"), options).toFile(`./output/pdf/${id}.pdf`, (err, res) => {
+    //                         if (err) {
+    //                             logger.error(err);
+    //                             return reject(err);
+    //                         }
+    //                         logger.info(res);
+    //                         return resolve(res);
+    //                     });
+    //                 });
+    //             createLists.push(task);
+    //         };
+    //         //输出结果模板
+    //         try {
+    //             createRes = await Promise.all(createLists);
+    //
+    //             let archive = new zip(),
+    //                 zipname = new Date().getTime(),
+    //                 output = `./output/zip/${zipname}.zip`,
+    //                 filepaths = [];
+    //
+    //             filepaths = _.map(createRes, res => {
+    //                 let id = _.find(ids, id => {
+    //                         return res.filename.indexOf(id) > -1;
+    //                     }),
+    //                     filename = semester[id];
+    //
+    //                 if (!think.isEmpty(id)) {
+    //                     return { name: `${id}.pdf`, path: res.filename }
+    //                 }
+    //             });
+    //
+    //             archive.addFiles(filepaths, () => {
+    //                 let buff = archive.toBuffer();
+    //
+    //                 fs.writeFile(output, buff, () => {
+    //                     logger.info("生成zip文件完成。");
+    //                     return this.json({ status: "done", filename: zipname });
+    //                 });
+    //             }, function(err) {
+    //                 logger.info(err);
+    //                 return this.fail("异常");
+    //             });
+    //         } catch (e) {
+    //             logger.error(e);
+    //             return this.fail(e);
+    //         }
+    //     })();
+    // }
 
-        // ids = ids.split(",");
+    async createdAction() {
+        if (!_.isEmpty(this.post())) {
+            return this.fail("只允许get");
+        }
+        let classid = this.get("classid"),
+            semester = this.get("semester");
+        let url = `http://${this.http.host}/classes/${classid}/`,
+            fn = think.promisify(request.get),
+            res = await fn({
+                url: url,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+        this.assign({
+            title: '签到明细',
+            semester: `${semester}`,
+            datas: _.isEmpty(res.body) ? {} : JSON.parse(res.body)
+        });
+        return this.display();
+    }
+
+    async exportpdfAction() {
+        let ids = this.post("ids"),
+            semesters = this.post("semester"),
+            hostname = this.http.host,
+            createLists = [],
+            timemap = new Date().getTime(),
+            createRes = [];
         logger.info(ids);
+        logger.info(semesters);
         (async() => {
-            //查询结果
             for (let id of ids) {
-                let url = `http://${this.http.host}/classes/${id}/`,
-                    fn = think.promisify(request.get),
-                    res = await fn({
-                        url: url,
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        }
-                    });
-                this.assign({
-                    title: '签到明细',
-                    semester: `${semester[id]}`,
-                    datas: JSON.parse(res.body)
-                });
-                let html = await this.fetch(), //渲染模版
-                    task = new Promise((resolve, reject) => { //输出pdf
-                        html = iconv.encode(html, "utf8"); //转换格式
-                        pdf.create(html.toString("utf8"), options).toFile(`./output/pdf/${id}.pdf`, (err, res) => {
-                            if (err) {
-                                logger.error(err);
-                                return reject(err);
-                            }
-                            logger.info(res);
-                            return resolve(res);
-                        });
-                    });
+                let classid = id,
+                    semester = urlencode(semesters[id]), //urlencode SpookyJS无法识别中文字符
+                    url = `http://${hostname}/index/created/?classid=${classid}&semester=${semester}`;
+
+                let task = await mySpooky(url, id, semester, timemap);
                 createLists.push(task);
-            };
+            }
             //输出结果模板
             try {
+                logger.info("输出结果模板");
                 createRes = await Promise.all(createLists);
-
                 let archive = new zip(),
                     zipname = new Date().getTime(),
                     output = `./output/zip/${zipname}.zip`,
-                    filepaths = new Array();
+                    filepaths = [];
 
                 filepaths = _.map(createRes, res => {
+                    logger.info(res);
                     let id = _.find(ids, id => {
                             return res.filename.indexOf(id) > -1;
                         }),
-                        filename = semester[id];
+                        filename = semesters[id];
 
                     if (!think.isEmpty(id)) {
-                        return { name: `${id}.pdf`, path: res.filename }
+                        return {
+                            name: res.filename,
+                            path: res.path
+                        }
                     }
                 });
 
@@ -146,7 +229,10 @@ export default class extends Base {
 
                     fs.writeFile(output, buff, () => {
                         logger.info("生成zip文件完成。");
-                        return this.json({ status: "done", filename: zipname });
+                        return this.json({
+                            status: "done",
+                            filename: zipname
+                        });
                     });
                 }, function(err) {
                     logger.info(err);
@@ -164,4 +250,72 @@ export default class extends Base {
         logger.info(`./output/zip/${filename}.zip`);
         return this.download(`./output/zip/${filename}.zip`);
     }
+}
+
+let mySpookyFunction = async(url, classid, semester, timemap, callback) => {
+    var spooky = new Spooky({
+        child: {
+            transport: 'http'
+        },
+        casper: {
+            logLevel: 'debug',
+            viewportSize: {
+                width: 1024,
+                height: 760
+            },
+            pageSettings: {
+                loadImages: true,
+                loadPlugins: false
+            },
+            verbose: false
+        }
+    }, function(err) {
+        if (err) {
+            console.log(err);
+            e = new Error('Failed to initialize SpookyJS');
+            e.details = err;
+            throw e;
+        }
+        // console.log(classid);
+        spooky.start(url);
+        spooky.then([{
+                classid,
+                semester,
+                timemap
+            },
+            function() {
+                let path = `./output/capture/${classid}_${timemap}.jpg`,
+                    filename = `${classid}_${timemap}.jpg`;
+                this.capture(path);
+                this.emit('return', {
+                    path,
+                    filename
+                });
+            }
+        ]);
+        spooky.run();
+    });
+    spooky.on('return', function(res) {
+        console.log(`spooky res==>${JSON.stringify(res)}`);
+        callback(null, res);
+    });
+    spooky.on('error', function(e, stack) {
+        console.error(e);
+        if (stack) {
+            console.log(stack);
+        }
+        callback(e, null);
+    });
+}
+
+var mySpooky = function(url, classid, semester, timemap) {
+    return new Promise(function(resolve, reject) {
+        mySpookyFunction(url, classid, semester, timemap, (err, res) => {
+            if (_.isEmpty(err)) {
+                return resolve(res);
+            } else {
+                return reject(err);
+            }
+        });
+    });
 }

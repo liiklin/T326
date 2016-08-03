@@ -49,7 +49,7 @@
                       <% if(datas.length) {%>
                         <% datas.forEach(function(val){ %>
                         <tr>
-                            <td class="table-id"><a class="am-btn am-btn-link" href='/index/students/?classid=<%= val.class_id %>&semester=<%= val.semester %>'><%= val.class_name %></a></td>
+                            <td class="table-id"><a class="am-btn am-btn-link" href='/index/students/?classid=<%= val.class_id %>&semester=<%= val.class_name %>'><%= val.class_name %></a></td>
                             <td class="table-date"><%= val.semester %></td>
                             <td class="table-date"><%= val.class_teacher %></td>
                             <td class="table-date"><%= val.class_room %></td>
@@ -59,7 +59,7 @@
                             <td class="table-date"><%= dataFormat(val.end_date,'YYYY-MM-DD') %></td>
                             <td class="table-date">
                                 <label class="am-checkbox-inline">
-                                    <input type="checkbox" data-semester="<%= val.semester %>" data-value="<%= val.class_id %>" id="<%= val.class_id %>" onchange="selected();" data-am-ucheck>&nbsp;
+                                    <input type="checkbox" data-semester="<%= val.class_name %>" data-value="<%= val.class_id %>" id="<%= val.class_id %>" onchange="selected();" data-am-ucheck>&nbsp;
                                 </label>
                             </td>
                         </tr>
