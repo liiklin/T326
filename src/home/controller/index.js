@@ -7,8 +7,8 @@ import request from "request";
 import _ from "underscore";
 import zip from "node-native-zip";
 import iconv from "iconv-lite";
-import Spooky from "spooky";
 import urlencode from "urlencode";
+import Pageres from "pageres";
 
 var logger = require('tracer').colorConsole();
 
@@ -189,38 +189,57 @@ export default class extends Base {
             createLists = [],
             timemap = new Date().getTime(),
             createRes = [];
-        logger.info(ids);
-        logger.info(semesters);
+        // logger.info(ids);
+        // logger.info(semesters);
         (async() => {
             for (let id of ids) {
                 let classid = id,
-                    semester = urlencode(semesters[id]), //urlencode SpookyJS无法识别中文字符
-                    url = `http://${hostname}/index/created/?classid=${classid}&semester=${semester}`;
+                    semester = semesters[id],
+                    urlencode_semester = urlencode(semester), //urlencode SpookyJS无法识别中文字符
+                    format = "jpg",
+                    url = `http://${hostname}/index/created/?classid=${classid}&semester=${urlencode_semester}`;
 
-                let task = await mySpooky(url, id, semester, timemap);
+                // logger.info(url);
+                think.mkdir(`./output/`);
+                think.mkdir(`./output/capture/`);
+                think.mkdir(`./output/capture/`);
+                let task = new Promise((resolve, reject) => { //输出jpg
+                    return new Pageres({
+                            delay: 2,
+                            format: format,
+                            filename: `${classid}_${timemap}`
+                        })
+                        .src(url, ['1920x1080'])
+                        .dest(`./output/capture/`)
+                        .run()
+                        .then(() => {
+                            logger.info('done');
+                            return resolve({
+                                filename: `${classid}_${timemap}.${format}`,
+                                path: `./output/capture/${classid}_${timemap}.${format}`
+                            });
+                        }).catch((err) => {
+                            logger.info(err);
+                            return reject(err);
+                        });
+                });
                 createLists.push(task);
             }
             //输出结果模板
             try {
-                logger.info("输出结果模板");
+                logger.info("输出结果模板中...");
                 createRes = await Promise.all(createLists);
+                logger.info(`输出结果模板完成 结果个数:${createRes.length}`);
                 let archive = new zip(),
                     zipname = new Date().getTime(),
                     output = `./output/zip/${zipname}.zip`,
                     filepaths = [];
 
+                think.mkdir(`./output/zip/`);
                 filepaths = _.map(createRes, res => {
-                    logger.info(res);
-                    let id = _.find(ids, id => {
-                            return res.filename.indexOf(id) > -1;
-                        }),
-                        filename = semesters[id];
-
-                    if (!think.isEmpty(id)) {
-                        return {
-                            name: res.filename,
-                            path: res.path
-                        }
+                    return {
+                        name: res.filename,
+                        path: res.path
                     }
                 });
 
@@ -250,72 +269,4 @@ export default class extends Base {
         logger.info(`./output/zip/${filename}.zip`);
         return this.download(`./output/zip/${filename}.zip`);
     }
-}
-
-let mySpookyFunction = async(url, classid, semester, timemap, callback) => {
-    var spooky = new Spooky({
-        child: {
-            transport: 'http'
-        },
-        casper: {
-            logLevel: 'debug',
-            viewportSize: {
-                width: 1024,
-                height: 760
-            },
-            pageSettings: {
-                loadImages: true,
-                loadPlugins: false
-            },
-            verbose: false
-        }
-    }, function(err) {
-        if (err) {
-            console.log(err);
-            e = new Error('Failed to initialize SpookyJS');
-            e.details = err;
-            throw e;
-        }
-        // console.log(classid);
-        spooky.start(url);
-        spooky.then([{
-                classid,
-                semester,
-                timemap
-            },
-            function() {
-                let path = `./output/capture/${classid}_${timemap}.jpg`,
-                    filename = `${classid}_${timemap}.jpg`;
-                this.capture(path);
-                this.emit('return', {
-                    path,
-                    filename
-                });
-            }
-        ]);
-        spooky.run();
-    });
-    spooky.on('return', function(res) {
-        console.log(`spooky res==>${JSON.stringify(res)}`);
-        callback(null, res);
-    });
-    spooky.on('error', function(e, stack) {
-        console.error(e);
-        if (stack) {
-            console.log(stack);
-        }
-        callback(e, null);
-    });
-}
-
-var mySpooky = function(url, classid, semester, timemap) {
-    return new Promise(function(resolve, reject) {
-        mySpookyFunction(url, classid, semester, timemap, (err, res) => {
-            if (_.isEmpty(err)) {
-                return resolve(res);
-            } else {
-                return reject(err);
-            }
-        });
-    });
 }
