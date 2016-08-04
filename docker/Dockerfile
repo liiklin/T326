@@ -11,7 +11,7 @@ RUN add-apt-repository ppa:chris-lea/node.js
 RUN apt-get update
 RUN apt-get install -y \
 	nodejs
-RUN npm install -g n
+RUN npm install -g n --registry=https://registry.npm.taobao.org
 RUN n 6.2.1
 #创建目录
 RUN mkdir -p /usr/src/app
