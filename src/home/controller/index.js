@@ -200,9 +200,9 @@ export default class extends Base {
                     url = `http://${hostname}/index/created/?classid=${classid}&semester=${urlencode_semester}`;
 
                 // logger.info(url);
-                think.mkdir(`./output/`);
-                think.mkdir(`./output/capture/`);
-                think.mkdir(`./output/capture/`);
+                // think.mkdir(`./output/`);
+                // think.mkdir(`./output/capture/`);
+                // think.mkdir(`./output/capture/`);
                 let task = new Promise((resolve, reject) => { //输出jpg
                     return new Pageres({
                             delay: 2,
