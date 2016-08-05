@@ -27,8 +27,8 @@ RUN cnpm install --verbose
 #复制工程
 COPY . /usr/src/app
 #设置环境
-# ENV PORT 9999
-# EXPOSE 9999
+ENV PORT 9999
+EXPOSE 9999
 #线上环境
 RUN npm run compile
 ENTRYPOINT pm2 start www/production.js --name 'T326_web' --no-daemon
